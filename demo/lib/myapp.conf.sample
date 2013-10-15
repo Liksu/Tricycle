@@ -1,12 +1,12 @@
 {
-	  title => 'Анна-Флекс'
+	  title => 'Demo'
 	, hypnotoad => {listen => ['http://*:3010'], workers => 2}
-	, db => { name => 'scheme', user => 'user', password => 'password', prefix => 'annaflex_' }
+	, db => { name => 'scheme', user => 'user', password => 'password', prefix => 'prefix_' }
 	, secret => 'secret_passphrase'
 	, theme => 'default'
 	, no_text_phrase => 'Text is bound to be. But later ;)'
 	, mail_transport => [ host => 'smtp.gmail.com', username => 'user@mail', password => 'userpassword', port =>  587 ]
-	, mail_headers => [From => 'order@anna-flex.com', To => 'manager@mail', Subject => "Новый заказ"]
+	, mail_headers => [From => 'site@demo', To => 'manager@mail', Subject => "From site"]
 	, thumbnails => {width => [160, 320, 640, 800], height => [120, 160, 240, 480, 640], default => 'x160', named => {small => '160x160', page => '640x480'}}
 	, images => '/photos'
 	, files => '/files'
