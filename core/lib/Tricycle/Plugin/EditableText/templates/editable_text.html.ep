@@ -1,0 +1,10 @@
+% if ($access) {
+	%= once_include js => javascript '/js/redactor.min.js'
+	%= once_include js => javascript '/js/editable.js'
+	%= once_include css => stylesheet '/css/redactor.css'
+	%= once_include css => stylesheet '/css/editable.css'
+% }
+
+% foreach my $text (@$texts) {
+	<div class="editable_text" data-text_id="<%= $text->{text_id} %>" data-category_id="<%= $text->{category_id} %>" data-launched="<%= $text->{launched} || 0 %>" data-specified_url="<%= $text->{specified_url} %>"><%== $access && $text->{launched} && $text->{text} eq (config('no_text_phrase') || '') ? '' : $text->{text} %></div>
+% }

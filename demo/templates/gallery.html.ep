@@ -1,0 +1,41 @@
+% layout 'default' unless $partial;
+
+%= once_include js => javascript '/js/highslide.min.js'
+%= once_include js => javascript '/js/highslide.defaults.js'
+%= once_include css => stylesheet '/css/highslide.css'
+%= once_include css => begin
+	<!--[if lt IE 7]>
+		%= stylesheet '/css/highslide-ie6.css'
+	<![endif]-->
+% end
+
+% unless ($partial) {
+	<div class="side">
+		%= menu 'second', 'products'
+	</div>
+% }
+<div class="gallery <%= !$partial ? 'content' : ''%>">
+	<h2><%= $title %></h2>
+	% unless ($partial) {
+		%= editable_text
+	% }
+	<div class="highslide-gallery"><ul>
+	% my $config_name = 'group_' . rnd(8);
+	% foreach my $photo (@$photos) {
+		<li><a href="<%= thumb_ $photo->{filename} %>" class="highslide" onclick="return hs.expand(this, <%= $config_name %>);">
+			<img src="<%= thumb $photo->{filename} %>">
+		</a>
+		<span class="highslide-caption"><%= $photo->{description} %></span>
+		</li>
+	% }
+	</ul></div>
+	<div style="clear:both"></div>
+</div>
+
+<script type="text/javascript">
+	// gallery config object
+	var <%= $config_name %> = {
+		slideshowGroup: '<%= $config_name %>',
+		transitions: ['expand', 'crossfade']
+	};
+</script>

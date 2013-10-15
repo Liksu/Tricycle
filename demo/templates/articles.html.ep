@@ -1,0 +1,10 @@
+% layout 'default';
+
+%= editable_text
+
+<ul>
+	% foreach my $link (@$sublinks) {
+		<li><a href="<%= $link->{uri_name} %>"><%= $link->{title} %></a></li>
+	% }
+</ul>
+

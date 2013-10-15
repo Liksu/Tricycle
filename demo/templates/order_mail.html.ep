@@ -1,0 +1,18 @@
+% my %form = (0 => 'Квадрат', 1 => 'Круг', 2 => 'Прямоугольник', 3 => 'Овал', 4 => 'Звезда', 5 => 'Другое');
+% my %yn = (0 => 'Нет', 1 => 'Да');
+% my %material = (0 => 'Самоклеющаяся бумага', 1 => 'Самоклеющаяся плёнка', 2 => 'ПП', 3 => 'ПЭ', 4 => 'ПЭТ', 5 => 'Другое');
+Размер: <b><%= param('size_x') %> × <%= param('size_y') %></b><br>
+Форма: <b><%= $form{ param('form') } %></b><br>
+Цветность: <b><%= param('colors') %></b><br>
+Лак: <b><%= $yn{ param('varnish') } %></b><br>
+Материал: <b><%= $material{ param('material') } %></b><br>
+Высечка:  <b><%= $yn{ param('carving') } %></b><br>
+Количство видов: <b><%= param('types') %></b><br>
+Количство каждого вида: <b><%= param('types_num') %></b><br>
+Примечание: <b><%= param('descr') %></b><br>
+Контактный телефон: <b><%= param('phone') %></b><br>
+Контактное лицо: <b><%= param('name') %></b><br>
+e-mail: <b><%= param('email') %></b><br>
+% if (param('upfile')->filename) {
+<br>Прикреплен файл <b><%= param('upfile')->filename %></b>
+% }

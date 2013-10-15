@@ -1,0 +1,8 @@
+% layout 'default';
+
+<div class="side">
+	%= menu 'second', 'products'
+</div>
+<div class="content">
+	<div class="message">Заказ отправлен.<br>В ближайшее время с вами свяжется наш менеджер.</div>
+</div>

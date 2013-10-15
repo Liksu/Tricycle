@@ -1,0 +1,180 @@
+% layout 'default' unless $partial;
+
+%= once_include 'js' => javascript '/js/highslide.min.js'
+%= once_include 'js' => javascript '/js/highslide.defaults.js'
+%= once_include 'css' => stylesheet '/css/highslide.css'
+	<!--[if lt IE 7]>
+		%= stylesheet '/css/highslide-ie6.css'
+	<![endif]-->
+%= once_include 'css' => stylesheet '/css/whhg.css'
+
+%#= javascript '/js/gallery.js'
+%#= stylesheet '/css/gallery.css'
+%= once_include 'css' => begin
+	<style>
+		.photo {border: 0; margin: 4px; padding: 0; display: inline-block; vertical-align: middle}
+
+		.controlBox {height: 30px; padding: 12px; }
+		.controlBox .back { width: 100%; height: 100%; background-color: #ffffff; opacity: 0.5; border: 0; z-index: -1; position: absolute; margin: -12px 0 0 -12px; -webkit-border-top-right-radius: 12px; -moz-border-radius-topright: 12px; border-top-right-radius: 12px;}
+		.controlBox span.control { font-size: 28px; display: inline-block; margin-right: 18px; cursor: pointer; line-height: 28px }
+		.controlBox span.control:last-child { margin-right: 0 }
+		.controlBox .icon-trash { color: red; }
+		.controlBox .icon-circleselection { color: #f1b00e; }
+		.controlBox .icon-circleselect { color: green; }
+		.controlBox .icon-pencil { color: navy; }
+		.controlBox .icon-remove-sign { color: darkred; }
+		.controlBox .icon-save-floppy { color: #1155cc; }
+		.highslide-caption textarea { width: 100%; height: 35pt }
+	</style>
+% end
+
+<!-- PAGE BEGIN -->
+
+% unless ($partial) {
+	<div class="side">
+		%= menu 'second', $uri_name ne 'pride_pictures' ? 'products' : 'admin'
+	</div>
+% }
+<div class="gallery <%= !$partial ? 'content' : ''%>">
+	% unless ($partial) {
+		<h2><%= $title %></h2>
+		%= editable_text
+	% } else {
+		<h2><a href="<%= url $gallery_url %>"><%= $title %></a></h2>
+	% }
+	%= uploader_droparea $gallery_url
+	<div class="highslide-gallery"><ul>
+	% my $config_name = 'group_' . rnd(8);
+	% foreach my $photo (@$photos) {
+		<li>
+			<a href="<%= thumb_ $photo->{filename} %>" class="highslide editable" onclick="return hs.expand(this, <%= $config_name %>, {filename: '<%= $photo->{filename} %>'})">
+				<img src="<%= thumb $photo->{filename} %>">
+			</a>
+			<span class="highslide-caption"><%= $photo->{description} %></span>
+		</li>
+	% }
+	</ul></div>
+	<div style="clear:both"></div>
+</div>
+<script>
+	% foreach my $photo (@$photos) {
+		photos['<%= $photo->{filename} %>'] = {id: '<%= $photo->{photo_id} %>', pride: !!parseInt('<%= $photo->{pride} %>'), edit: false, url: '<%= $gallery_url %>/<%= $photo->{photo_id} %>'};
+	% }
+	// gallery config object
+	var <%= $config_name %> = {
+		slideshowGroup: '<%= $config_name %>',
+		transitions: ['expand', 'crossfade']
+	};
+
+	if (window.FormData) $('.droparea').addClass('dnd').hide();
+</script>
+
+<!-- PAGE END -->
+
+% once_include js => begin
+<script type="text/javascript">
+	var photos = {};
+
+	hs.debug = true;
+
+	// sold "dot"
+	hs.Expander.prototype.onBeforeExpand = function (sender, e) {
+		var div = document.createElement('div');
+		div.className = "highslide-overlay controlBox";
+		div.innerHTML =  '<div class="back"></div>'
+				+'<span class="control" data-type="undo"></span>'
+				+'<span class="control" data-type="edit"></span>'
+				+'<span class="control" data-type="pride"></span>'
+				+'<span class="control" data-type="delete"></span>'
+				+'';
+		$(div).data({filename: this.custom.filename});
+		if (this.caption.id) photos[this.custom.filename].caption_id = this.caption.id;
+		set_buttons(this.custom.filename, div);
+		if (/editable/.test(this.a.className))
+			sender.createOverlay({
+				  overlayId: div
+				, position: 'bottom left'
+			});
+	};
+
+	$(document).on('click', '.highslide-overlay span.control', function(e) {
+		var $span = $(e.target);
+		var type = $span.data('type');
+		var filename = $span.parent().data('filename');
+		var $caption = $span.parents('.highslide-container').find('.highslide-caption');
+
+		if (type == 'undo') {
+			photos[filename]['edit'] = !photos[filename]['edit'];
+			$caption.html( photos[filename].old_text || '' );
+			if (photos[filename].old_text) delete photos[filename].old_text;
+		}
+
+		if (type == 'edit') {
+			if (photos[filename][type]) {
+				var text = $caption.find('textarea').val();
+				AF.rest({
+					  url: photos[filename].url
+					, method: 'PUT'
+					, data: {description: text}
+				}).then(function(json) {
+					$caption.html( text );
+					hs.clones[ photos[filename].caption_id ].innerHTML = text;
+					if (photos[filename].old_text) delete photos[filename].old_text;
+				});
+			} else {
+				photos[filename].old_text = $caption.html();
+				$caption.html($('<textarea>').val(photos[filename].old_text));
+			}
+		}
+
+		if (type == 'pride') {
+			AF.rest({
+				  url: photos[filename].url
+				, method: 'PUT'
+				, data: {pride: !photos[filename].pride ? 1 : 0}
+			});
+		}
+
+		if (type == 'delete') {
+			AF.rest({
+				  url: photos[filename].url
+				, method: 'DELETE'
+			});
+		}
+
+		photos[filename][type] = !photos[filename][type];
+		set_buttons(filename, $span.parent());
+	});
+
+	var classes = { // [0: false, 1: true]
+		undo: ['', 'icon-remove-sign']
+		, edit: ['icon-pencil', 'icon-save-floppy']
+		, pride: ['icon-circleselection', 'icon-circleselect']
+		, delete: ['icon-trash', '']
+	};
+
+	var texts = { // [0: false, 1: true]
+		undo: ['Отменить редактирование', '']
+		, edit: ['Редактировать описание', 'Сохранить']
+		, pride: ['Отсутствует на главной', 'Присутствует на главной']
+		, delete: ['Удалить', '']
+	};
+
+	function set_buttons(filename, el) {
+		var $el = $(el);
+		if ($el.is('.control')) {
+			var type = $el.data('type');
+
+			photos[filename]['undo'] = !!photos[filename]['edit'];
+			$el.addClass( classes[type][+!!photos[filename][type]] );
+			$el.removeClass( classes[type][+!photos[filename][type]] );
+			$el.attr({ title: texts[type][+!!photos[filename][type]] });
+		} else { // div container
+			$el.find('.control').each(function(i, item) {
+				set_buttons(filename, item);
+			});
+		}
+	}
+
+</script>
+% end

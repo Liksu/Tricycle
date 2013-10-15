@@ -1,0 +1,50 @@
+% layout 'default';
+%= once_include js => javascript '/js/highslide.min.js'
+%= once_include css => stylesheet '/css/highslide.css'
+%= once_include css => begin
+<!--[if lt IE 7]>
+%= stylesheet '/css/highslide-ie6.css'
+<![endif]-->
+% end
+%= once_include js => begin
+<script>
+	hs.graphicsDir = '/img/highslide/';
+	hs.showCredits = false;
+	hs.outlineType = 'custom';
+	hs.registerOverlay({
+		html: '<div class="closebutton" onclick="return hs.close(this)" title="Закрыть"></div>',
+		position: 'top right',
+		useOnHtml: true,
+		fade: 2 // fading the semi-transparent overlay looks bad in IE
+	});
+
+	// Russian language strings
+	hs.lang = {
+		loadingText: 'Загружается...',
+		closeText: 'Закрыть',
+		closeTitle: 'Закрыть (esc)',
+		fullExpandText: 'Оригинальный размер'
+	};
+</script>
+% end
+
+
+<style>
+	.content > p, .editable_text > p {text-indent: 0em !important; text-align: left !important;}
+</style>
+
+<div class="side">
+	%= menu 'second', 'products'
+</div>
+<div class="content">
+	%= editable_text
+</div>
+
+<script>
+
+$('a.highslide').each(function() {
+	$(this).click(function() { return hs.expand(this) && false });
+});
+
+</script>
+

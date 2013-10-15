@@ -1,0 +1,17 @@
+% layout 'default';
+%= once_include 'css' => stylesheet '/css/whhg.css'
+
+<div class="side">
+	%= menu 'second', 'docs'
+</div>
+<div class="content">
+	% if ($pride) {
+	<div class="pride">
+		<img src="<%= thumb_page $pride->{filename} %>" alt="<%= $pride->{description} %>">
+		<!--<span>Мы умеем такое</span>-->
+	</div>
+	% }
+	<p class="about">
+		%= editable_text
+	</p>
+</div>

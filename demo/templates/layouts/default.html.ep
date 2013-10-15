@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title><%= title %></title>
+	<link rel="shortcut icon" href="/favicon.ico">
+	<script>AF = {}</script>
+	%= stylesheet '/css/reset.css'
+	%= stylesheet '/css/default.css'
+	%= javascript '/js/jquery.min.js'
+	% if (session('user')) {
+		%= stylesheet '/css/humane.css'
+		%= javascript '/js/humane.min.js'
+		%= javascript '/js/utils.js'
+	% }
+	%== once_include get => 'js';
+	%== once_include get => 'css';
+</head>
+<body>
+<div class="wrapper">
+	<div class="header">
+		% content logo => begin
+			<img src="/img/logo.png" class="logo">
+		% end
+
+		% if (stash('category_id')) {
+		<a href="/"><%== content 'logo' %></a>
+		% } else {
+		%== content 'logo'
+		% }
+
+		<div class="contacts"><%= editable_text 1 %></div>
+
+		%= menu 'main'
+	</div>
+	<div class="section">
+		<%= content %>
+	</div>
+	<div class="footer"><a href="http://github.com/Liksu/Tricycle">View on github</a> © Liksu, 2013</div>
+</div>
+
+% if (session('user')) {
+	<div class="additional">
+		Hi, <%= session('user')->{login} %>.<br>You are under <b><%= session('user_access_level') %></b> access level now.<br>
+		<button id="logout">Logout</button>
+		<script>
+			AF.link('#logout', {
+				url: '/<%= $self->db('get_url_by_uriname', 'logout')->{result}->[0]->{uri} %>'
+				, method: 'DELETE'
+			});
+		</script>
+	</div>
+% } else {
+	<div class="additional"><a href='/admin/login'>Login</a></div>
+% }
+</body>
+</html>

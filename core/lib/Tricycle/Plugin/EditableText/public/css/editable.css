@@ -1,0 +1,11 @@
+body .redactor_toolbar li a.redactor_btn_Save {
+	background: url(/img/save.png) no-repeat;
+}
+
+body .redactor_toolbar li a.redactor_btn_Exit {
+	background: url(/img/close.png) no-repeat;
+}
+
+.redactor_box {
+	margin-bottom: 1em
+}

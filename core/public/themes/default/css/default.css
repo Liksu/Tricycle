@@ -1,0 +1,61 @@
+body {background-image: url(/img/bg.gif); width: 888px; margin: 0 auto; font-family: Verdana,Tahoma,Arial}
+.header {}
+
+.header .menu {position: relative; width: 888px; height: 42px; background-color: #CCF}
+.header .menu .item {float: left; border: 1px solid navy; height: 32px; padding: 4px; background-color: #EEEEEE;}
+.header .menu .item.active {background-color: lightskyblue}
+.header .menu .item a {text-decoration: none; vertical-align: middle;}
+.header .menu .item.last {float: right}
+
+.section {position: relative; width: 888px; background-color: white; border: 1px solid darkblue}
+.section .side {width: 196px; float: left}
+.section .side .menu {}
+.section .side .menu .item {height: 24px; width: 186px; text-decoration: none; border: 1px solid navy; background-color: aliceblue; padding: 4px;}
+.section .side .menu .item a {text-decoration: none; vertical-align: middle;}
+.section .side .menu .item.active {background-color: #66CCCC}
+.content {width: 658px; float: right; padding: 16px; background-color: azure; border: 1px solid navy}
+
+.content > p, .editable_text > p {text-indent: 1.5em; text-align: justify}
+
+h2 {font-size: 140%; text-align: center; line-height: 2em}
+
+.additional { border: 1px solid sienna; background-color: lightgoldenrodyellow; padding: 7px; position: absolute; right: 4px; top: 4px; font-size: 80%; /* white-space: pre; font-family: monospace; */ }
+
+.editable_tree {}
+.editable_tree ul {margin-left: 1.5em}
+.editable_tree>ul {margin-left: .5em}
+.editable_tree li {list-style: circle}
+.editable_tree .not_editable .dynatree-title {color: LightBlue}
+.editable_tree .disabled .dynatree-title {color: silver}
+
+.dialog label {width: 100%; display: block; margin-bottom: 0.7em}
+.dialog label input, .dialog label select {width: 30%; display: inline-block}
+.dialog label span {width: 25%; display: inline-block}
+.dialog label span.test_uri {width: 42%}
+.dialog label input.checkbox {width: 1em}
+
+.dialog label.half {width: 49%; display: inline-block}
+.dialog label.third {width: 32%; display: inline-block}
+.dialog label.quarter {width: 24%; display: inline-block}
+
+.dialog .error {color: red}
+.dialog .admin_email {display: none}
+.dialog .invalid {color: red; background-color: lightpink}
+
+.dialog label+.error {font-size: 80%; line-height: 0.8em; margin-top: -1em; position: absolute}
+
+.ui-dialog-buttonset {width: 100% !important}
+.ui-dialog-buttonset button.delete {float: right; background: none; border: 0px none; color: red}
+
+.confirm .ui-dialog-titlebar {display: none}
+.confirm.delete.ui-dialog, .confirm.delete.ui-widget, .confirm.delete.ui-widget-content, .confirm.delete .ui-widget-content, .confirm.delete.ui-corner-all, .confirm.delete.ui-draggable, .confirm.delete.ui-resizable {background: #B00000 !important; color: white; font-weight: bold}
+.confirm.delete button.right {float: right}
+
+.editable_text {}
+.redactor_editor img {border: 1px dashed silver}
+
+.pride {}
+.pride img {max-width: 650px; max-height: 320px; display: block; margin: 0 auto}
+
+.message {text-align: center; font-weight: bold}
+.order td {padding-bottom: 0.7em; padding-right: 0.4em}

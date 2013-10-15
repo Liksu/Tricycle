@@ -1,0 +1,85 @@
+% layout 'default';
+
+<div class="side">
+	%= menu 'second', 'products'
+</div>
+<div class="content">
+	<h2>Онлайн заказ</h2>
+	<form method="post" class="order" enctype="multipart/form-data">
+		<table>
+			<tr>
+				<td>Размер:</td>
+				<td><input size="5" name="size_x">×<input size="5" name="size_y"></td>
+			</tr>
+			<tr>
+				<td>Форма:</td>
+				<td><select name="form">
+					<option value="0">Квадрат</option>
+					<option value="1">Круг</option>
+					<option value="2">Прямоугольник</option>
+					<option value="3">Овал</option>
+					<option value="4">Звезда</option>
+					<option value="5">Другое</option>
+				</select></td>
+			</tr>
+			<tr>
+				<td>Цветность:<br><small>(количество красок)</small></td>
+				<td><input type="text" size="5" name="colors"></td>
+			</tr>
+			<tr>
+				<td>Лак:</td>
+				<td><select name="varnish">
+					<option value="0">Нет</option>
+					<option value="1">Да</option>
+				</select></td>
+			</tr>
+			<tr>
+				<td>Материал:</td>
+				<td><select name="material">
+					<option value="0">Самоклеющаяся бумага</option>
+					<option value="1">Самоклеющаяся плёнка</option>
+					<option value="2">ПП</option>
+					<option value="3">ПЭ</option>
+					<option value="4">ПЭТ</option>
+					<option value="5">Другое</option>
+				</select></td>
+			</tr>
+			<tr>
+				<td>Высечка:</td>
+				<td><select name="carving">
+					<option value="0">Нет</option>
+					<option value="1">Да</option>
+				</select></td>
+			</tr>
+			<tr>
+				<td>Количство видов: </td>
+				<td><input type="text" size="5" name="types"></td>
+			</tr>
+			<tr>
+				<td>Количство каждого вида: </td>
+				<td><input type="text" size="5" name="types_num"></td>
+			</tr>
+			<tr>
+				<td>Примечание:</td>
+				<td><textarea rows="10" cols="50" name="descr"></textarea></td>
+			</tr>
+			<tr>
+				<td>Прикрепить файл:<br><small>(не более 2 Мб)</small></td>
+				<td><input type="file" name="upfile"></td>
+			</tr>
+			<tr>
+				<td>Контактный телефон: </td>
+				<td><input type="text" name="phone"></td>
+			</tr>
+			<tr>
+				<td>Контактное лицо: </td>
+				<td><input type="text" name="name"></td>
+			</tr>
+			<tr>
+				<td>e-mail:</td>
+				<td><input type="text" name="email"></td>
+			</tr>
+		</table>
+		<input type="submit" value="Отправить запрос">
+	</form>
+</div>

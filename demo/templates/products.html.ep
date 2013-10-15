@@ -1,0 +1,12 @@
+% layout 'default';
+
+<div class="side">
+	%= menu 'second', 'docs'
+</div>
+<div class="content">
+	<p><%= editable_text %></p>
+	% foreach my $link (@$sublinks) {
+		<!--<a href="<%= $link->{uri_name} %>"><%= $link->{title} %></a>-->
+		%= gallery $link->{category_id}
+	% }
+</div>

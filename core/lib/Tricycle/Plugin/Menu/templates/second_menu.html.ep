@@ -1,0 +1,13 @@
+<ul class="menu">
+	% foreach my $line (@$items) {
+		% if ($line->{visible}) {
+			<li class="item <%= $line->{active} ? 'active' : '' %>">
+				% if ($line->{id} == $category_id) {
+					<%= $line->{title} %>
+				% } else {
+					<a href="<%= url $line->{path} %>"><%= $line->{title} %></a>
+				% }
+			</li>
+		% }
+	% }
+</ul>

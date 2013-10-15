@@ -1,0 +1,17 @@
+% my $categories = $self->db('get_subtree_by_id', $parent_id);
+% if ($categories->{count} && !$categories->{err}) {
+	<ul>
+		% foreach my $category (@{$categories->{result}}) {
+			% next unless config('tree')->{multihead} || $category->{category_id} ~~ $filter || $level;
+
+			% my $id = join '—', map {$_ || 'tree'} split /\//, $category->{url} || 'NULL';
+			% $category->{url} = '/' unless $category->{uri_name} && $category->{url};
+			% my $data = join ', ', map { "$_: " . (defined $category->{$_} ? ($category->{$_} eq '' ? 'true' : "'$category->{$_}'") : 'undefined')} qw(category_id parent_id visible enabled uri_name pagetype sort_order access_level system url);
+			% my $classes = join ' ', grep {$_} defined $category->{system} ? 'not_editable' : undef, defined $category->{enabled} ? undef : 'disabled';
+			% $data .= qq|, addClass: '$classes'| if $classes;
+			<li id="<%= $id %>" data="<%== $data %>"> <a href="<%= url $category->{url} || '/' %>"><%= $category->{title} %></a>
+				%= include 'admin/subtree', parent_id => $category->{category_id}, level => $level + 1
+			</li>
+		% }
+	</ul>
+% }

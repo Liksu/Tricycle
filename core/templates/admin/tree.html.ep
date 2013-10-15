@@ -1,0 +1,322 @@
+% layout 'default';
+
+%= javascript '/js/jquery-migrate.js'
+<script>jQuery.migrateMute = true;</script>
+
+%= stylesheet '/css/humane.css'
+%= javascript '/js/humane.min.js'
+%= javascript '/js/utils.js'
+%= javascript '/js/jquery.validate.js'
+
+%= javascript '/js/jquery-ui.custom.min.js'
+%= javascript '/js/jquery.cookie.js'
+%= javascript '/js/dynatree.min.js'
+%= stylesheet '/css/dynatree.css'
+
+%= stylesheet '/css/jquery-ui.css'
+
+<button class="add_node_button">Add node</button>
+<div class="editable_tree">
+	% if (config('tree')->{multihead}) {
+	<ul>
+		<li id="tree"> <a href="/">Root</a>
+			%= include 'admin/subtree', parent_id => 0, filter => [], level => 0
+		</li>
+	</ul>
+	% } else {
+		%= include 'admin/subtree', parent_id => 0, filter => [db('get_mainpage_id')], level => 0
+	% }
+</div>
+
+<div class="dialog" title="Элемент меню">
+	%= form_for $old_url => (form_id => 'category_form') => begin
+		<label><span>Название:</span> <%= text_field 'title' => '', 'data-validate' => 'required' %></label><div class="error"></div>
+		<label><span>URI:</span> <%= text_field 'uri_name' => '', class => "uri", 'data-validate' => 'ajax: /ajax/valid_uri; required' %> <span class="test_uri"></span></label><div class="error"></div>
+		<label><span>Тип страницы:</span> <%= select_field pagetype => $pagetype %></label><div class="error"></div>
+		<label><span>Порядковый номер:</span> <%= text_field 'sort_order' %></label><div class="error"></div>
+		<label><span>Уровень доступа:</span> <%= select_field access_level => [['гость' => 'guest'], ['зарегистрированный пользователь' => 'user'], ['администратор' => 'admin']] %></label><div class="error"></div>
+		<label class="third"><%= check_box visible => 'visible' %> <span>Виден в меню</span></label><div class="error"></div>
+		<label class="third"><%= check_box enabled => 'enabled' %> <span>Включен</span></label><div class="error"></div>
+		<label class="third"><%= check_box system => 0, session('user_access_level') ne 'su' ? (disabled => 1) : () %> <span>Системный</span></label><div class="error"></div>
+		%= hidden_field parent_url => ''
+		%= hidden_field category_id => 0
+		%= hidden_field parent_id => 0
+
+		%= text_field email => '', class => 'admin_email'
+		%= hidden_field admin_session => session('admin_session') || 42
+	%= end
+</div>
+
+<div class="confirm">Точно удалить?</div>
+
+<script>
+	(function($) {
+		// update styles
+		$('li:has(ul)', '.editable_tree').addClass('folder expanded');
+		$('.dialog input:checkbox').addClass('checkbox');
+
+		// editor object
+		var editor = new (function() {
+			var self = this;
+			var $dialog = $('.dialog');
+			var action = $dialog.find('form').attr('action');
+			var $tree = $('.editable_tree');
+			var fields = 'category_id parent_id title visible enabled uri_name pagetype sort_order access_level system url parent_url'.split(' ');
+			var access_level = "<%= session('user_access_level') %>" == 'su';
+
+			self.reset_form = function(data) {
+				$dialog.find('input').not('[name=admin_session]').val('');
+				$dialog.find('.error').html('');
+				$dialog.find('[name]').attr({disabled: false});
+				$dialog.find('*').removeClass('invalid');
+
+				$.each(fields, function(i, key) {
+					$dialog.find('[name=' + key + ']').set_val(data[key])
+				});
+
+				$dialog.find('[name]').attr({disabled: !!data.system && !access_level});
+				$dialog.find('[name=system]').attr({disabled: !access_level});
+
+				self.set_test_uri();
+			};
+
+			self.set_test_uri = function() {
+				var parent_url = $dialog.find('input[name=parent_url]').val();
+				$dialog.find('.test_uri')
+					.html( ( parent_url == '/' ? '' : parent_url ) + '/' + $dialog.find('input[name=uri_name]').val() )
+					.toggleClass('error', !$dialog.find('input[name=uri_name]').val())
+					;
+			};
+
+			self.validate = function() {
+				return $dialog
+						.find('form')
+						.validate(function(el, passed, errors) {
+							$(el).toggleClass('invalid', !passed);
+							if (!passed) $(el).parent().next().html( errors.join('; ') )
+						});
+			};
+
+			self.serialize = function() {
+				var params = {};
+				$.each(fields, function(i, key) {
+					var $input = $dialog.find('[name=' + key + ']');
+					if ($input.is(':checkbox')) params[key] = $input.attr('checked') ? 1 : 0;
+					else params[key] = $input.val();
+				});
+				params['admin_session'] = $dialog.find('[name=admin_session]').val();
+				return params;
+			};
+
+			self.update_main_menu = function() {
+				$.get('/ajax/get_main_menu').then(function(html) {
+					$('ul.menu').replaceWith(html)
+				});
+			};
+
+			self.edit_node = function(node) {
+				node.data.parent_url = node.data.url.replace(new RegExp( '/' + node.data.uri_name + '$'), '');
+
+				self.reset_form(node.data);
+				$dialog.find('input.uri').data({ajax: {parent_id: node.data.parent_id, initial_value: node.data.uri_name}});
+
+				var buttons = [
+					  {text: 'Ok',     click: self.update}
+					, {text: 'Отмена', click: self.close_dialog}
+				];
+				if (!node.data.system || access_level) buttons.push({text: 'Удалить', click: function() {self.delete()}, class: 'delete'});
+				if (node.data.system && !access_level) buttons.shift();
+
+				$dialog.dialog('option', 'buttons', buttons);
+				$dialog.dialog('open');
+			};
+
+			self.move_node = function(active_node, target_node, mode) {
+				if (mode == 'over') {
+					$.when(
+						AF.rest({
+							  url: action
+							, method: 'PUT'
+							, data: {
+								  reparenting: true
+								, category_id: active_node.data.category_id
+								, parent_id: target_node.data.category_id
+								, admin_session: $dialog.find('[name=admin_session]').val()
+							  }
+						})
+					).then(function(json) {
+						if (json.status == 'ok') {
+							var old_parent = active_node.parent;
+
+							active_node.move(target_node, mode);
+							$.extend( active_node.data, json.new_data );
+							active_node.render();
+
+							// change icons
+							old_parent.data.isFolder = !!old_parent.childList;
+							if (!old_parent.data.isFolder) old_parent.render();
+
+							if (!target_node.data.isFolder) {
+								target_node.data.isFolder = true;
+								target_node.render();
+							}
+
+							self.update_main_menu();
+						} else {
+							AF.query_error(json.message);
+						}
+					});
+				}
+			};
+
+			self.create_node = function() {
+				var parent = $tree.dynatree("getActiveNode").data;
+				var new_fields = {};
+				$.each(fields, function(i, item) { new_fields[item] = '' });
+				new_fields.parent_id = parent.category_id;
+				new_fields.parent_url = parent.url;
+				new_fields.visible = 1;
+				new_fields.enabled = 1;
+
+				self.reset_form(new_fields);
+				$dialog.find('input.uri').data('ajax', {parent_id: new_fields.parent_id});
+
+				var buttons = [
+					  {text: 'Ok',     click: self.create}
+					, {text: 'Отмена', click: self.close_dialog}
+				];
+
+				$dialog.dialog('option', 'buttons', buttons);
+				$dialog.dialog('open');
+			};
+
+			self.close_dialog = function() {
+				$dialog.dialog( "close" );
+			};
+
+			self.set = function(method) {
+				self.validate().then(function(passed) {if (passed) {
+					var params = self.serialize();
+					AF.rest({
+						  url: action
+						, method: method
+						, data: params
+					}).then(function(json) {
+						if (json.status == 'ok') {
+							$dialog.dialog( "close" );
+
+							if (method == 'POST') {
+								params.category_id = json.new_id;
+								params.url = params.parent_url + '/' + params.uri_name;
+								$tree.dynatree("getActiveNode").addChild(params);
+
+								if (!$tree.dynatree("getActiveNode").data.isFolder) {
+									$tree.dynatree("getActiveNode").data.isFolder = true;
+									$tree.dynatree("getActiveNode").render();
+								}
+
+							} else {
+								var node = $tree.dynatree("getActiveNode");
+								$.extend( node.data, params, json.new_data );
+								node.render();
+								$(node.span).toggleClass('not_editable', !!node.data.system);
+								$(node.span).toggleClass('disabled', !node.data.enabled);
+							}
+
+							self.update_main_menu();
+						} else {
+							AF.query_error()
+						}
+					});
+				}});
+			};
+
+			self.create = function() { self.set('POST') };
+			self.update = function() { self.set('PUT') };
+
+			self.delete = function(confirmed) {
+				if (confirmed) {
+					AF.rest({
+						  url: action + '/' + $tree.dynatree("getActiveNode").data.category_id
+						, method: 'DELETE'
+					});
+				} else {
+					var buttons = confirm('getButtons');
+					buttons.push({text: 'Да', click: function() { self.delete(true) }, class: 'right'});
+					confirm(buttons, 'delete');
+				}
+			};
+
+			$dialog.find('.uri').keyup( self.set_test_uri );
+			$dialog.find('input').keyup(function() { $(this).removeClass('invalid'); $(this).parent().next().html('') });
+			$('.add_node_button').click(self.create_node);
+			if (!access_level) $('select[name=pagetype] option[value^=admin]').attr('disabled', true);
+		})();
+
+		// dialog init
+		$('.dialog').dialog({
+			  modal: true
+			, width: 700
+			, height: 350
+			, autoOpen: false
+		}).on('keyup', function(e){
+			if (e.keyCode == $.ui.keyCode.ENTER) $('.ui-dialog-buttonset :button:eq(0)').click();
+		});
+
+		// dialog init
+		$('.confirm').dialog({
+			  modal: true
+			, width: 400
+			, height: 100
+			, autoOpen: false
+			, initButtons: [{text: 'Нет', click: function() { $( this ).dialog( "close" ) }}]
+		});
+		function confirm(button_set, type) {
+			var $confirm = $('.confirm');
+			if (button_set instanceof Array) {
+				$confirm.dialog( "option", "buttons", button_set);
+				$confirm.dialog( "option", "dialogClass", 'confirm ' + type);
+				$confirm.dialog('open');
+			} else if (button_set == 'getButtons') {
+				return [].concat( $confirm.dialog( "option", "initButtons" ) );
+			}
+		}
+
+		// tree init
+		$('.editable_tree').dynatree({
+			  minExpandLevel: 2
+			, clickFolderMode: 1
+			, debugLevel: 0
+			, onDblClick: function(node, event) {
+				if (node.data.key == 'tree') return false;
+				editor.edit_node(node);
+				return false;
+			}
+
+			, dnd: {
+				  onDragStart: function(node) {
+					return true;
+				}
+				, onDrop: function(node, sourceNode, hitMode, ui, draggable) {
+					editor.move_node(sourceNode, node, hitMode);
+				}
+				, onDragEnter: function(node, sourceNode) {
+					return true;
+				}
+				, onDragOver: function(node, sourceNode, hitMode) {
+					// Prevent dropping a parent below it's own child
+					if(node.isDescendantOf(sourceNode)) return false;
+
+					if( hitMode !== "over" ){
+						return "over";
+					}
+				}
+				, autoExpandMS: 1000
+				, preventVoidMoves: true
+			}
+
+		});
+		$('.editable_tree').dynatree("getTree").activateKey("tree");
+	})(jQuery);
+
+</script>

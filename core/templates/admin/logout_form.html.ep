@@ -1,0 +1,12 @@
+% layout 'default';
+%= stylesheet '/css/humane.css'
+%= javascript '/js/humane.min.js'
+%= javascript '/js/utils.js'
+
+%= form_for $old_url => (form_id => 'logout_form') => begin
+	%= submit_button 'logout'
+% end
+
+<script>
+	AF.form('logout_form', 'DELETE');
+</script>

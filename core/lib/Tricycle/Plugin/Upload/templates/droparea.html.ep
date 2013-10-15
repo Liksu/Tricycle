@@ -1,0 +1,111 @@
+%= once_include 'css' => begin
+<style>
+	.droparea {width: 650px; border: 1px dashed silver; padding: 8px; border-radius: 16px; margin-bottom: 1em }
+	.droparea p {}
+	.droparea form {}
+	.droparea.dnd {width: 630px; height: 120px; border: 6px dashed silver; background-color: #E8E8E8; margin: 0 auto 1em; display: table; border-radius: 16px; }
+	.droparea.dnd p {display: table-cell; vertical-align: middle; text-align: center; }
+	.droparea.dnd form {display: none}
+	.uploader {margin-bottom: 1em}
+</style>
+% end
+
+<div class="uploader">
+	<p>Загрузить фотографии:</p>
+	<div class="droparea" data-url="<%= $upload_url %>" data-type="<%= $upload_type // 'photos' %>"><p>Кидай файлы сюда</p></div>
+	<form action="<%= $upload_url %>" form_id="uploader_form" method="post" enctype="multipart/form-data" data-type="<%= $upload_type // 'photos' %>">
+		<input type="file" name="files" multiple accept="image/*" /><br>
+		<input type="submit"/>
+	</form>
+</div>
+
+%= once_include 'js' => begin
+	<script>
+	$(document).ready(function() {
+		var check = function(files, fd, form_type) {
+			var added_files = 0;
+			$.each(files, function(i, file) {
+				if (form_type == 'photos') {
+					if (/^image\//.test(file.type)) {
+						console.info('Upload image: %s [%s]', file.name, file.type);
+						fd.append('files', file);
+						added_files++;
+					} else {
+						console.info('Not image: %s [%s]', file.name, file.type);
+						AF.query_error("This is not an image file");
+					}
+				} else {
+					console.info('Upload file: %s [%s]', file.name, file.type);
+					fd.append('files', file);
+					added_files++;
+				}
+			});
+			return added_files;
+		};
+
+		$('form[form_id=uploader_form]').unbind('submit').submit(function() {
+			var fd = FormData();
+			var added_files = check($('input[type=file]', this)[0].files, fd, $(this).data('type'));
+			if (added_files) AF.rest({
+				  url: $(this).attr('action')
+				, method: 'POST'
+				, data: fd
+				, fileUpload: true
+			}).then(function(json) {
+				console.log(json);
+				document.location.reload();
+			});
+
+			return false;
+		});
+
+		////////////////////////// D'n'D
+		if (window.FormData) {
+			$(document)
+					.on('dragover dragenter', '.gallery *', function(event) {
+						event.preventDefault && event.preventDefault();
+						event.stopPropagation && event.stopPropagation();
+						window.onChild = true;
+					})
+					.on('dragleave', '.gallery *', function(event) {
+						event.preventDefault && event.preventDefault();
+						event.stopPropagation && event.stopPropagation();
+						window.onChild = false;
+					})
+					.on('dragenter', '.gallery', function(event) {
+						event.preventDefault && event.preventDefault();
+						event.stopPropagation && event.stopPropagation();
+						$(this).find('.droparea').show()
+					})
+					.on('dragleave', '.gallery', function(event) {
+						event.preventDefault && event.preventDefault();
+						event.stopPropagation && event.stopPropagation();
+						if (!window.onChild) $(this).find('.droparea').hide()
+					})
+					.on('drop', '.gallery', function(event) {
+						event.preventDefault && event.preventDefault();
+						event.stopPropagation && event.stopPropagation();
+
+						var $dropa = $(this).find('.droparea');
+						$dropa.hide();
+
+						var files = event.originalEvent.dataTransfer.files;
+						var fd = new FormData();
+
+						var added_files = check(files, fd, $dropa.data('type'));
+						if (!added_files) return false;
+
+						AF.rest({
+							url: $dropa.data('url')
+							, method: 'POST'
+							, data: fd
+							, fileUpload: true
+						}).then(function(json) {
+									console.log(json);
+									document.location.reload();
+								});
+					})
+		}
+	});
+	</script>
+%= end
