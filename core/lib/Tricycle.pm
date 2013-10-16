@@ -23,8 +23,6 @@ sub register {
 	push @{$app->renderer->paths}, catdir(dirname(__FILE__), '../templates');
 	push @{$app->static->paths},   catdir(dirname(__FILE__), '../public');
 
-	warn join ', ', @{$app->static->paths};
-
 	push @{$app->plugins->namespaces}, 'Tricycle::Plugin';
 	$app->plugin('Ajax');
 	$app->plugin('ORM');

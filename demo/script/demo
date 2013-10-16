@@ -8,4 +8,5 @@ BEGIN { unshift @INC, "$FindBin::Bin/../lib", "$FindBin::Bin/../../core/lib"}
 
 # Start command line interface for application
 require Mojolicious::Commands;
+$ENV{MOJO_REVERSE_PROXY} = 1;
 Mojolicious::Commands->start_app('Demo');

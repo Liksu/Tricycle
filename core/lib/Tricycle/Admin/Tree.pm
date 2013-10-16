@@ -18,7 +18,6 @@ sub get {
 	);
 	for my $prefix (keys %folders) {
 		$basedir = $folders{$prefix};
-		warn 'DIR>' . $basedir;
 		opendir D, $basedir;
 			my @list = readdir D;
 		closedir D;
