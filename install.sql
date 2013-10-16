@@ -233,7 +233,8 @@ CREATE TABLE IF NOT EXISTS `prefix_users` (
 --
 
 INSERT INTO `prefix_users` (`user_id`, `login`, `pass`, `access_level`) VALUES
-(32425, 'su', '', 'su');
+(4, 'su', PASSWORD('su'), 'su'),
+(7, 'admin', '', 'admin');
 
 --
 -- Ограничения внешнего ключа сохраненных таблиц
