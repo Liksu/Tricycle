@@ -46,9 +46,15 @@ sub register {
 
 sub _get_editable {
 	my $c = shift;
-	my %options = @_;
 	my $texts = []; # [{ text_id, category_id, text }]
-	my ($param) = keys %options unless $#_;
+	my %options;
+	my $param;
+
+	if (@_ == 1) {
+		$param = $_[0];
+	} else {
+		%options = @_;
+	}
 
 	if (defined $options{url} && defined $options{text}) {
 		$texts = [{text => $options{text}, text_id => undef, category_id => undef, specified_url => $options{url}, launched => !!$options{text}}]

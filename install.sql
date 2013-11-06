@@ -207,7 +207,7 @@ CREATE TABLE IF NOT EXISTS `prefix_texts` (
 -- Дамп данных таблицы `prefix_texts`
 --
 
-INSERT INTO `test_texts` (`text_id`, `category_id`, `text`, `type`) VALUES
+INSERT INTO `prefix_texts` (`text_id`, `category_id`, `text`, `type`) VALUES
 (1, NULL, '<p>Contact us&nbsp;<a href="mailto:tricycle@Liksu.kiev.ua"><span style="color: #fac08f;">by e-mail</span></a></p>\n', 'headertext'),
 (2, 1, '<p>This is an example site for the&nbsp;«<a href="https://github.com/Liksu/Tricycle">Tricycle</a>» project.</p><p><br></p>', 'maintext'),
 (3, 7, '<p>A little later we will add in this section of information on how to install this CMS.<br></p>', 'maintext');

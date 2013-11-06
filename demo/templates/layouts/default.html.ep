@@ -22,7 +22,7 @@
 			<img src="/img/logo.png" class="logo">
 		% end
 
-		% if (stash('category_id')) {
+		% if (stash('recognized_url') ne '/') {
 		<a href="/"><%== content 'logo' %></a>
 		% } else {
 		%== content 'logo'

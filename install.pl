@@ -1,12 +1,13 @@
 #!/usr/bin/perl
 
 $config = {
+	db => {prefix => 'site_'},
 	users => [
 		{value => 'guest', title => 'гость', indb => 0, canset => 1},
 		{value => 'user', title => 'зарегистрированный пользователь', indb => 1, canset => 1, default => 1},
 		{value => 'admin', title => 'администратор', indb => 1, canset => 1},
 		{value => 'su', title => 'super user', indb => 1, canset => 0}
-	]
+	],
 	# core\lib\Tricycle\Plugin\Helpers.pm::_check_page_access, line 17
 	# all values
 	# my %user_levels = map {$_ => $n++} qw(guest user admin su);
@@ -24,7 +25,7 @@ local $/ = undef;
 open($fh, '<', 'install.sql') or die "Cann't open file: $!";
 	my $sql = <$fh>;
 close $fh;
-$sql =~ s/prefix_/$db->{prefix}/ig;
+$sql =~ s/prefix_/$config->{db}->{prefix}/ig;
 open($fh, '>', 'ready.sql') or die "Cann't open file: $!";
 	print $fh $sql;
 close $fh;

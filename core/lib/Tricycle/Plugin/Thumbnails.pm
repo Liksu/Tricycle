@@ -7,12 +7,14 @@ sub register {
 	my ($plugin, $app, $config) = @_;
 
 	my $width = $app->config('thumbnails') && $app->config('thumbnails')->{width} || [];
-	unshift @{$width}, '';
-
 	my $height = $app->config('thumbnails') && $app->config('thumbnails')->{height} || [];
+	my @dimensions = keys %{{ map {$_ => 1} @$width, @$height }};
+
+	unshift @{$width}, '';
 	unshift @{$height}, '';
 
 	$app->routes->route($app->config('images') . '/(:width)x(:height)/#file', width => $width, height => $height)->to(namespace => 'Tricycle::Plugin', controller => 'Thumbnails', action => 'process', width => undef, height => undef);
+	$app->routes->route($app->config('images') . '/(:dimension)/#file', dimension => \@dimensions)->to(namespace => 'Tricycle::Plugin', controller => 'Thumbnails', action => 'process');
 
 	$app->helper('thumb' => \&_get_thumbnail);
 	foreach my $name ( keys %{$app->config('thumbnails')->{named}}, '' => '' ) {
@@ -23,7 +25,9 @@ sub register {
 
 sub process {
 	my $c = shift;
-	my ($width, $height) = ($c->stash('width') // '', $c->stash('height') // '');
+	my ($width, $height) = $c->stash('dimension')
+		? ($c->stash('dimension') // 16, $c->stash('dimension') // 16)
+		: ($c->stash('width') // '', $c->stash('height') // '');
 
 	my $filepath = $c->uploader_path($c->config('images'), $c->stash('file'));
 	unless ( ($width || $height) && -f $filepath ) {
@@ -41,7 +45,7 @@ sub process {
 	mkdir $c->uploader_path($folder) unless -d $c->uploader_path($folder);
 	$image->Write( filename => $c->uploader_path($folder, $c->stash('file')) );
 
-	$c->render(static => $folder .'/'. $c->stash('file'));
+	$c->render_static(substr $c->uploader_path(undef, $c->config('images'), $width . 'x' . $height, $c->stash('file')), 1);
 }
 
 sub _get_thumbnail {

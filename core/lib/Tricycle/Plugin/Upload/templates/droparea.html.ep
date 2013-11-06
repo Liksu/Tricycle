@@ -44,7 +44,7 @@
 		};
 
 		$('form[form_id=uploader_form]').unbind('submit').submit(function() {
-			var fd = FormData();
+			var fd = new FormData(this);
 			var added_files = check($('input[type=file]', this)[0].files, fd, $(this).data('type'));
 			if (added_files) AF.rest({
 				  url: $(this).attr('action')

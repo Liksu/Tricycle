@@ -13,7 +13,7 @@ $(document).ready(function() {
 			, fileUpload: '/plugins/editable_text/upload_files'
 			, imageGetJson: '/ajax/get_photos_list'
 			, buttons: ['Exit', '|', '|',
-				'|', 'html', '|', 'formatting', '|', 'bold', 'italic', 'alignment', '|', 'fontcolor', 'backcolor',
+				'|', 'html', '|', 'formatting', '|', 'bold', 'italic', 'alignment', 'deleted', '|', 'fontcolor', 'backcolor',
 				'|', 'unorderedlist', 'orderedlist', 'outdent', 'indent',
 				'|', 'image', 'file', 'table', 'link', 'horizontalrule',
 				'|', 'Save']

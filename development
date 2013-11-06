@@ -1,1 +1,1 @@
-morbo -l 'http://*:3020' -w demo/templates -w demo/lib -w core/templates -w core/lib demo/script/demo
+morbo -l 'http://*:3020' -w demo/templates -w demo/lib -w core/templates -w core/lib demo/script/demo 2>demo.log
