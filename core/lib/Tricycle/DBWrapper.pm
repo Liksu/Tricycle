@@ -3,15 +3,14 @@ use DBI;
 
 our $AUTOLOAD;
 sub AUTOLOAD {
-	my $self = shift;
 	my $name = $AUTOLOAD;
 	return if $name =~ /^.*::[A-Z]+$/;
 	$name =~ s/^.*:://;
 
 	my $sub = sub {
-		shift if $_[0] && $_[0]->can('isa');
+		my $self = shift;  #if $_[0] && $_[0]->can('isa')
 		unshift @_, $self->fix(shift) if $name ~~ [qw(do selectrow_hashref selectrow_array selectrow_arrayref selectall_arrayref selectall_hashref selectcol_arrayref prepare)];
-#		warn "DB.$name > " . join '; ', @_;
+#		warn "DB.$name ($self->{dbh})> " . join '; ' @_;
 		if ($name ~~ [qw(selectrow_array)]) {
 			my @result;
 			eval {@result = $self->{dbh}->$name(@_)};
